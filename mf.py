@@ -237,7 +237,7 @@ def ap_metric(clf, X_val, y_val):
 def performance(clf, X_val, y_val):
   from sklearn.metrics import plot_roc_curve
 
-  plot_roc_curve(model, X_val, y_val)
+  plot_roc_curve(clf, X_val, y_val)
   plt.show()
 
   ap_metric(clf, X_val, y_val)
@@ -286,13 +286,13 @@ def select_days(dataset, days):
   dataset = dataset[dataset['TransactionDT'] < tot]
   return dataset
 
-def easy_ensemble(n_subsets, X_train, y_train):
+def easy_ensemble(n_subsets, X_train, y_train, n_subsets = 5):
   from imblearn.ensemble import EasyEnsemble 
   ee = EasyEnsemble(random_state=42, n_subsets=n_subsets)
   X_trainres, y_trainres = ee.fit_sample(X_train, y_train)
   return X_trainres, y_trainres
 
-def roc_auc_subset(clf, X_train, y_train, X_val, y_val):
+def roc_auc_subset(clf, X_train, y_train, X_val, y_val, n_subsets = 5):
   from sklearn.metrics import auc
   from sklearn.metrics import plot_roc_curve
   from xgboost import XGBClassifier
