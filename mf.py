@@ -166,10 +166,9 @@ def get_sign_cols(count, liv_sign = 0.95):
 
 def dropColNotSign(dataset, col_sign, not_ignore = None):
   col_not_sign = []
-  if not fraud:
-      for col in dataset.columns:
-        if col not in col_sign and col != not_ignore:
-          col_not_sign.append(col)
+  for col in dataset.columns:
+    if col not in col_sign and col != not_ignore:
+        col_not_sign.append(col)
   dataset = dataset.drop(col_not_sign, axis=1)            
   return dataset
 
