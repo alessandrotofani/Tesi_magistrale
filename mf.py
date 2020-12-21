@@ -286,7 +286,7 @@ def select_days(dataset, days):
   dataset = dataset[dataset['TransactionDT'] < tot]
   return dataset
 
-def easy_ensemble(n_subsets, X_train, y_train, n_subsets = 5):
+def easy_ensemble(n_subsets, X_train, y_train):
   from imblearn.ensemble import EasyEnsemble 
   ee = EasyEnsemble(random_state=42, n_subsets=n_subsets)
   X_trainres, y_trainres = ee.fit_sample(X_train, y_train)
