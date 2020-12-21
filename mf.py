@@ -1,3 +1,8 @@
+import numpy as np # linear algebra
+import pandas as pd # data processing
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
 #####################################################################################################
 ## Functions for mice ##
 #####################################################################################################
@@ -83,7 +88,7 @@ def diff(df):
         res[col] = df[col][0] - df[col][1]
     return res
 
-def s(df_safe, df_fraud):
+def s(df_safe, df_fraud, stds):
     res = {}
     for col in df_safe.columns:
         s0_2 = stds[col][0]**2
@@ -96,10 +101,10 @@ def s(df_safe, df_fraud):
 def t(mean, std, df_safe, df_fraud):
     res = {}
     for col in mean.columns:
-        res[col] = diff(mean)[col] / s(df_safe, df_fraud)[col]
+        res[col] = diff(mean)[col] / s(df_safe, df_fraud, std)[col]
     return res
 
-def v(df_safe, df_fraud):
+def v(df_safe, df_fraud, stds):
     res = {}
     for col in df_safe.columns:
         s0_2 = stds[col][0]**2
