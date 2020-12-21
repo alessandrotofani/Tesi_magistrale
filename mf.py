@@ -100,8 +100,9 @@ def s(df_safe, df_fraud, stds):
 
 def t(mean, std, df_safe, df_fraud):
     res = {}
+    s_ = s(df_safe, df_fraud, std)
     for col in mean.columns:
-        res[col] = diff(mean)[col] / s(df_safe, df_fraud, std)[col]
+        res[col] = diff(mean)[col] / s_[col]
     return res
 
 def v(df_safe, df_fraud, stds):
