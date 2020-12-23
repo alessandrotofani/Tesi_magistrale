@@ -222,12 +222,15 @@ def split(dataset, test_size):
   X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=test_size, random_state=42)
   return X_train, X_val, y_train, y_val
 
-def ap_metric(clf, X_val, y_val):
+def ap_metric(clf, X_val, y_val, proba = True):
   from sklearn.metrics import precision_recall_curve
   from sklearn.metrics import plot_precision_recall_curve
   from sklearn.metrics import average_precision_score
-
-  y_score = clf.predict_proba(X_val)
+  if proba:
+    y_score = clf.predict_proba(X_val)
+  else:
+    y_score = clf.predict(X_val)
+    
   average_precision = average_precision_score(y_val, y_score[:,1])
 
   disp = plot_precision_recall_curve(clf, X_val, y_val)
