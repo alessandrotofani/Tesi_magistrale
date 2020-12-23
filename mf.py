@@ -337,8 +337,11 @@ def roc_auc_subset(clf, X_train, y_train, X_val, y_val, n_subsets = 5):
   plt.show()
   return
 
-
-
+# https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
+def f1(model, X_val, y_val):
+  from sklearn.metrics import f1_score
+  y_pred = model.predict(X_val) 
+  return f1_score(y_val, y_pred, average='macro')
 
 
 
