@@ -222,28 +222,30 @@ def split(dataset, test_size):
   X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=test_size, random_state=42)
   return X_train, X_val, y_train, y_val
 
-def ap_metric(clf, X_val, y_val, proba = True):
+def ap_metric(clf, X_val, y_val, proba):
   from sklearn.metrics import precision_recall_curve
   from sklearn.metrics import plot_precision_recall_curve
   from sklearn.metrics import average_precision_score
+
   if proba:
     y_score = clf.predict_proba(X_val)
+    average_precision = average_precision_score(y_val, y_score[:,1])
+
   else:
     y_score = clf.predict(X_val)
-    
-  average_precision = average_precision_score(y_val, y_score[:,1])
-
+    average_precision = average_precision_score(y_val, y_score)
+   
   disp = plot_precision_recall_curve(clf, X_val, y_val)
   disp.ax_.set_title('2-class Precision-Recall curve: AP={0:0.2f}'.format(average_precision))
   return
 
-def performance(clf, X_val, y_val):
+def performance(clf, X_val, y_val, proba = True):
   from sklearn.metrics import plot_roc_curve
 
   plot_roc_curve(clf, X_val, y_val)
   plt.show()
 
-  ap_metric(clf, X_val, y_val)
+  ap_metric(clf, X_val, y_val, proba)
   return
 
 def conf_matrix(clf, X_val, y_val):
