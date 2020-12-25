@@ -239,6 +239,10 @@ def ap_metric(clf, X_val, y_val, proba):
   disp.ax_.set_title('2-class Precision-Recall curve: AP={0:0.2f}'.format(average_precision))
   return
 
+#####################################################################################################
+## Performance measure ##
+#####################################################################################################
+
 def performance(clf, X_val, y_val, proba = True):
   from sklearn.metrics import plot_roc_curve
 
@@ -348,7 +352,57 @@ def f1(model, X_val, y_val):
   y_pred = model.predict(X_val) 
   return f1_score(y_val, y_pred, average='macro')
 
+#####################################################################################################
+## Preprocessing ##
+#####################################################################################################
+def mse_calc(X, X_pred):
+  from sklearn.metrics import mean_squared_error
+  err = []
 
+  for i in range(X.shape[0]):
+    err.append(mean_squared_error(X.iloc[i], X_pred[i]))
+
+  return err
+
+def mse(safe, fraud, autoencoder):
+
+  safe_predicted = autoencoder.predict(safe)
+  fraud_predicted = autoencoder.predict(fraud)
+
+  safe_errors = mse_calc(safe, safe_predicted)
+  fraud_errors = mse_calc(fraud, fraud_predicted)
+
+  return safe_errors, fraud_errors
+
+def make_df(X_val, fraud_train, autoencoder):
+  safe_errors, fraud_errors = mse(X_val, fraud_train, autoencoder) 
+
+  safe_df = pd.DataFrame({'mse': safe_errors, 'anomaly': np.zeros(len(safe_errors))})
+  fraud_df = pd.DataFrame({'mse': fraud_errors,	'anomaly': np.ones(len(fraud_errors))})
+
+  mse_df = pd.concat([safe_df, fraud_df])
+
+  return mse_df
+
+def performance_autoencoder(X_test, fraud_test, autoencoder, soglia):
+  from sklearn.metrics import confusion_matrix
+
+  mse_df = make_df(X_test, fraud_test, autoencoder)
+  y_pred = []
+  for mse in mse_df['mse']:
+    if mse > soglia:
+      y_pred.append(0)
+    if mse < soglia:
+      y_pred.append(1)
+
+  y_safe = np.zeros(X_test.shape[0])
+  y_fraud = np.ones(fraud_test.shape[0])
+  y_true = np.concatenate((y_safe, y_fraud))
+
+  print(confusion_matrix(y_true, y_pred))
+  return 
+
+  
 
 
 
