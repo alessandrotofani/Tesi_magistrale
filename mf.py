@@ -353,8 +353,9 @@ def f1(model, X_val, y_val):
   return f1_score(y_val, y_pred, average='macro')
 
 #####################################################################################################
-## Preprocessing ##
+## Autoencoder  ##
 #####################################################################################################
+
 def mse_calc(X, X_pred):
   from sklearn.metrics import mean_squared_error
   err = []
@@ -384,8 +385,13 @@ def make_df(X_val, fraud_train, autoencoder):
 
   return mse_df
 
+# confusion matrix
+# https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
 def performance_autoencoder(X_test, fraud_test, autoencoder, soglia):
   from sklearn.metrics import confusion_matrix
+  from sklearn.metrics import recall_score
+  from sklearn.metrics import average_precision_score
+  from sklearn.metrics import f1_score
 
   mse_df = make_df(X_test, fraud_test, autoencoder)
   y_pred = []
@@ -399,10 +405,18 @@ def performance_autoencoder(X_test, fraud_test, autoencoder, soglia):
   y_fraud = np.ones(fraud_test.shape[0])
   y_true = np.concatenate((y_safe, y_fraud))
 
-  print(confusion_matrix(y_true, y_pred))
-  return 
-
+  recall =  recall_score(y_true, y_pred, average='macro')
+  print('Recall: ', recall)
+  average_precision = average_precision_score(y_true, y_pred)
+  print('Average Precision: ', average_precision)
+  f1 = f1_score(y_true, y_pred, average='macro')
+  print('F1 score: ', f1)
+  cm = confusion_matrix(y_true, y_pred)
+  print(cm)
   
+  return cm, recall, average_precision, f1
+
+
 
 
 
