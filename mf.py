@@ -416,8 +416,35 @@ def performance_autoencoder(X_test, fraud_test, autoencoder, soglia):
   
   return cm, recall, average_precision, f1
 
+#####################################################################################################
+## Rete neurale  ##
+#####################################################################################################
 
+# Riferimento cm: https://www.tensorflow.org/tutorials/structured_data/imbalanced_data
+def plot_cm(labels, predictions, p=0.5):
+  from sklearn.metrics import confusion_matrix
+  cm = confusion_matrix(labels, predictions > p)
+  plt.figure(figsize=(5,5))
+  sns.heatmap(cm, annot=True, fmt="d")
+  plt.title('Confusion matrix @{:.2f}'.format(p))
+  plt.ylabel('Actual label')
+  plt.xlabel('Predicted label')
+  return
 
+# Riferimento auc: https://www.dlology.com/blog/simple-guide-on-how-to-generate-roc-plot-for-keras-classifier/
+def plot_roc(name, labels, predictions, **kwargs):
+  from sklearn.metrics import roc_curve, auc
+
+  fp, tp, _ = roc_curve(labels, predictions)
+  auc_nn = auc(fp, tp)
+  print('AUC: ', auc_nn)
+  plt.plot(100*fp, 100*tp, label=name, linewidth=2, **kwargs)
+  plt.xlabel('False positives [%]')
+  plt.ylabel('True positives [%]')
+  plt.legend(loc='lower right')
+  plt.grid(True)
+  ax = plt.gca()
+  return
 
 
 
