@@ -446,6 +446,19 @@ def plot_roc(name, labels, predictions, **kwargs):
   ax = plt.gca()
   return
 
+def plot_ap(name, y_test, y_pred, **kwargs):
+  from sklearn.metrics import precision_recall_curve, average_precision_score
+
+  precision, recall, _ = precision_recall_curve(y_test, y_pred)
+  ap = average_precision_score(y_test, y_pred)
+  print('Average precision: ', ap)
+  plt.plot(100*recall, 100*precision, label=name, linewidth=2, **kwargs)
+  plt.xlabel('Recall')
+  plt.ylabel('Precision')
+  plt.legend(loc='lower right')
+  plt.grid(True)
+  ax = plt.gca()
+  return
 
 
 
