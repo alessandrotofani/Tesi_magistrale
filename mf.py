@@ -462,11 +462,53 @@ def plot_ap(name, y_test, y_pred, **kwargs):
 
 
 #####################################################################################################
+## Catboost ##
+#####################################################################################################
+
+def feature_scaling(data):
+  from sklearn import preprocessing
+
+  min_max_scaler = preprocessing.MinMaxScaler()
+  time = data['TransactionDT'].values.reshape(-1,1)
+  data['TransactionDT'] = min_max_scaler.fit_transform(time)
+  data.drop(columns=['TransactionID'], inplace=True)
+  return data
+
+
+def ratio(data):
+  fraud = (data['isFraud'] == 1).sum()
+  safe = (data['isFraud'] == 0).sum()
+  r = np.ceil(safe/fraud)
+  return r
+
+def encoding(data, cat_cols):
+  from sklearn import preprocessing
+  categorical_col=load_list(cat_cols)
+  categorical_features = [data.columns.get_loc(col) for col in categorical_col if col in data]
+  categorical_names = {}
+  for feature in categorical_features:
+      le = preprocessing.LabelEncoder()
+      le.fit(data.iloc[:, feature])
+      data.iloc[:, feature] = le.transform(data.iloc[:, feature])
+      categorical_names[feature] = le.classes_
+  return data, categorical_names
+
+# https://stackoverflow.com/questions/46966690/change-a-column-string-into-int-in-python-list
+def to_list(data, cat_feature_list):
+  my_list = data.values.tolist()
+  for row in my_list:
+    for col in cat_feature_list:
+      row[col] = int(row[col])
+  return my_list
+
+
+#####################################################################################################
 ## XAI ##
 #####################################################################################################
 
 # salva la lista list nel path specificato assegnando filename come nome del file
 def save_list(filename, list):
+  import os
   if not os.path.isfile('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt'):
       with open(filename+'.txt', 'w') as f:
           for item in list:
