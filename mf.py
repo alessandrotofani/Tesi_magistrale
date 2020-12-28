@@ -472,10 +472,16 @@ def save_list(filename, list):
               f.write("%s " % item)
   return
 
-def load_list(filename):           
-  file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt', "r")
+def load_list(filename, alg):           
+  file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+alg+filename+'.txt', "r")
   list = file.read() # importo il file
   list = list.split(" ") # le colonne sono separate dallo spazio
   file.close() 
   list.pop() # levo l'ultimo elemento che è vuoto
   return list
+
+def get_set(filename, data, alg):
+  list = load_list(filename, alg)
+  list = [int(i) for i in list]
+  X = data.iloc[list, :]
+  return X
