@@ -475,7 +475,7 @@ def save_list(filename, list):
 def load_list(filename):           
   file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt', "r")
   list = file.read() # importo il file
-  list = filename.split(" ") # le colonne sono separate dallo spazio
+  list = list.split(" ") # le colonne sono separate dallo spazio
   file.close() 
   list.pop() # levo l'ultimo elemento che è vuoto
   return list
