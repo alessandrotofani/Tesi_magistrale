@@ -461,4 +461,21 @@ def plot_ap(name, y_test, y_pred, **kwargs):
   return
 
 
+#####################################################################################################
+## Load and save dataset rows  ##
+#####################################################################################################
 
+def save_list(filename, list):
+  if not os.path.isfile('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt'):
+      with open(filename+'.txt', 'w') as f:
+          for item in list:
+              f.write("%s " % item)
+  return
+
+def load_list(filename, list):           
+  file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt', "r")
+  list = file.read() # importo il file
+  list = filename.split(" ") # le colonne sono separate dallo spazio
+  file.close() 
+  list.pop() # levo l'ultimo elemento che è vuoto
+  return
