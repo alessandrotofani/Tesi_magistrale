@@ -478,4 +478,4 @@ def load_list(filename, list):
   list = filename.split(" ") # le colonne sono separate dallo spazio
   file.close() 
   list.pop() # levo l'ultimo elemento che è vuoto
-  return
+  return list
