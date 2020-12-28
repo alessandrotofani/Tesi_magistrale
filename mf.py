@@ -472,7 +472,7 @@ def save_list(filename, list):
               f.write("%s " % item)
   return
 
-def load_list(filename, list):           
+def load_list(filename):           
   file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt', "r")
   list = file.read() # importo il file
   list = filename.split(" ") # le colonne sono separate dallo spazio
