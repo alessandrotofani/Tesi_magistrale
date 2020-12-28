@@ -473,7 +473,7 @@ def save_list(filename, list):
   return
 
 def load_list(filename, alg):           
-  file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+alg+filename+'.txt', "r")
+  file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+alg+'/'+filename+'.txt', "r")
   list = file.read() # importo il file
   list = list.split(" ") # le colonne sono separate dallo spazio
   file.close() 
