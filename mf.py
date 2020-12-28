@@ -462,9 +462,10 @@ def plot_ap(name, y_test, y_pred, **kwargs):
 
 
 #####################################################################################################
-## Load and save dataset rows  ##
+## XAI ##
 #####################################################################################################
 
+# salva la lista list nel path specificato assegnando filename come nome del file
 def save_list(filename, list):
   if not os.path.isfile('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt'):
       with open(filename+'.txt', 'w') as f:
@@ -472,16 +473,25 @@ def save_list(filename, list):
               f.write("%s " % item)
   return
 
-def load_list(filename, alg):           
-  file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+alg+'/'+filename+'.txt', "r")
+# serve per caricare la lista con gli id delle righe del dataframe
+def load_list(filename, alg = None):
+  if alg is None:       
+    file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt', "r")
+  else:
+    file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+alg+'/'+filename+'.txt', "r")
   list = file.read() # importo il file
   list = list.split(" ") # le colonne sono separate dallo spazio
   file.close() 
   list.pop() # levo l'ultimo elemento che è vuoto
   return list
 
-def get_set(filename, data, alg):
+# serve per selezionare il dataset dati gli id
+# bisogna usare lo stesso set usato nella parte di training del modello
+# filename: nome del file che contiene la lista degli id
+# alg: nome dell'algoritmo 
+# data: train, test o val. Set che si vuole selezionare
+def get_set(filename, data, alg): 
   list = load_list(filename, alg)
-  list = [int(i) for i in list]
+  list = [int(i) for i in list] 
   X = data.iloc[list, :]
   return X
