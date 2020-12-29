@@ -18,9 +18,9 @@
 
 `3_Neural_Net.ipynb`: costruzione di una rete neurale per fare classificazione. Dopo il training, si valutano le performance del modello. 
 
-`3_Pre_&_CatBoost.ipynb`: costruzione di un modello ad ensemble, CatBoost, per fare classificazione. Col catboost si evita di fare il one hot encoding, che invece è necessario per tutti gli altri modelli. Dopo il training, esuito sull'intero dataset, si valutano le performance del modello. Al momento è il modello più performante. 
+`3_Pre_&_CatBoost.ipynb`: costruzione di un modello ad ensemble, CatBoost, per fare classificazione. Col catboost si evita di fare il one hot encoding, che invece è necessario per tutti gli altri modelli. Dopo il training, esuito sull'intero dataset, si valutano le performance del modello. 
 
-`3_Pre_&_XGBoost.ipynb`: costruzione di un modello ad ensemble, XGBoost, per fare classificazione. Training eseguito sui primi 60 giorni (per motivi computazionali), vengono valutate le performance.
+`3_XGBoost.ipynb`: costruzione di un modello ad ensemble, XGBoost, per fare classificazione. Training eseguito su tutto il dataset, vengono valutate le performance. C'è anche una fase di feature engineering che migliora sensibilmente le prestazioni. Al momento è il modello più performante. 
  
 `3_SVM.ipynb`: costruzione di una support vector machine per fare classificazione. Viene implementata una LinearSVC di scikit learn, che si comporta meglio per dataset con più di 20-30 features. 
 
