@@ -537,3 +537,76 @@ def get_set(filename, data, alg):
   list = [int(i) for i in list] 
   X = data.iloc[list, :]
   return X
+
+
+
+#####################################################################################################
+## Feature Engineering  ##
+#####################################################################################################
+
+# Riferimento: https://www.kaggle.com/davidcairuz/feature-engineering-lightgbm
+def feature_engineering(data):
+  data = device(data)
+  data = os_(data)
+  data = browser(data)
+  data = screen(data)
+  data = id_23_34(data)
+  data.drop(columns = ['DeviceInfo', 'id_30', 'id_31', 'id_33', 'id_34', 'id_23'], inplace=True)
+
+  data = date(data)
+  return data
+
+def device_name(data):
+  data['device_name'] = data['DeviceInfo'].str.split('/', expand=True)[0]
+  device_dict = {
+      'SM': 'Samsung',
+      'SAMSUNG': 'Samsung',
+      'GT-': 'Samsung',
+      'Moto G': 'Motorola',
+      'Moto': 'Motorola',
+      'moto': 'Motorola',
+      'LG-': 'LG',
+      'rv:': 'RV',
+      'HUAWEI': 'Huawei',
+      'ALE-': 'Huawei',
+      '-L': 'Huawei',
+      'Blade': 'ZTE',
+      'BLADE': 'ZTE',
+      'Linux': 'Linux',
+      'XT': 'Sony',
+      'HTC': 'HTC',
+      'ASUS': 'Asus'
+        }
+  for device in device_dict:
+    data.loc[data['device_name'].str.contains(device, na=False), 'device_name'] = device_dict[device]
+  data.loc[data.device_name.isin(data.device_name.value_counts()[data.device_name.value_counts() < 200].index), 'device_name'] = "Others"
+  return data
+
+def device(data):
+  data['device_version'] = data['DeviceInfo'].str.split('/', expand=True)[1]
+  return data
+
+def os_(data):
+  data['os_name'] = data['id_30'].str.split(' ', expand=True)[0]
+  data['os_version'] = data['id_30'].str.split(' ', expand=True)[1]
+  return data
+
+def browser(data):
+  data['browser_name'] = data['id_31'].str.split(' ', expand=True)[0]
+  data['bro wser_version'] = data['id_31'].str.split(' ', expand=True)[1]
+  return data
+
+def screen(data):
+  data['screen_w'] = data['id_33'].str.split('x', expand=True)[0]
+  data['screen_h'] = data['id_33'].str.split('x', expand=True)[1]
+  return data
+
+def id_23_34(data):
+  data['id_23'] = data['id_23'].str.split(':', expand=True)[1]
+  data['id_34'] = data['id_34'].str.split(':', expand=True)[1]  
+  return data
+
+def date(data):
+  data['day'] = np.floor((data['TransactionDT'] / (3600 * 24) - 1) % 7)
+  data['hour'] = np.floor(data['TransactionDT'] / 3600) % 24
+  return data
