@@ -27,6 +27,8 @@
 ### XAI
 `4_LIME.ipynb`: contiene l'implementazione di lime. Vengono caricati i modelli, e poi viene eseguito l'algoritmo. 
 
+`4_SHAP.ipynb`: contiene l'implementazione del calcolo degli shapley values. Vengono caricati i modelli, e poi viene eseguito l'algoritmo. 
+
 ### Modulo 
 `mf.py` contiene tutte le funzioni custom utilizzate nei notebook precedenti. 
 
