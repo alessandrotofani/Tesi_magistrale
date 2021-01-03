@@ -352,6 +352,49 @@ def f1(model, X_val, y_val):
   y_pred = model.predict(X_val) 
   return f1_score(y_val, y_pred, average='macro')
 
+def loss_by_day(X_test, y_test, clf):
+  from sklearn.metrics import log_loss, confusion_matrix
+  y_pred = clf.predict_proba(X_test)
+  pred_df = pd.DataFrame(data=y_pred, index = X_test.index)
+  pred_df['day'] = X_test['day']
+  pred_df['label'] = y_test
+  pred_df['pred_label'] = clf.predict(X_test)
+
+  splitted = {}
+  for i in range(7):
+    splitted[i] = pred_df[pred_df['day'] == i]
+  
+  loss = {}
+  cm = {}
+  for i in range(7):
+    labels = splitted[i]['label']
+    pred_vector =  splitted[i][[0,1]]
+    pred_label = splitted[i]['pred_label']
+    loss[i] = log_loss(labels, pred_vector).round(4)
+    cm[i] = confusion_matrix(labels, pred_label, normalize = 'true')
+  
+  return loss, cm
+
+def fraud_ratio_per_feature(data, feature, verbose = False):
+  subset = data[data[feature] == 1]
+  tot = subset.shape[0]
+  fraud_count = subset[subset['isFraud'] == 1].sum()[0]
+  ratio = fraud_count/tot
+  if not verbose:
+    return ratio
+  else:
+    return ratio, fraud_count, tot
+
+def ratio_dictionary(clf, data, n_features):
+  feature_score = clf.get_booster().get_score(importance_type='gain')
+  important_features = sorted(feature_score, key=feature_score.get, reverse=True)[:n_features]
+  ratio_dict = {}
+  for feature in important_features:
+    ratio_dict[feature] = list(fraud_ratio_per_feature(data, feature, verbose = True))
+    if ratio_dict[feature][0] == 0:
+      del ratio_dict[feature]
+  return ratio_dict
+
 #####################################################################################################
 ## Autoencoder  ##
 #####################################################################################################
@@ -532,11 +575,17 @@ def load_list(filename, alg = None):
 # filename: nome del file che contiene la lista degli id
 # alg: nome dell'algoritmo 
 # data: train, test o val. Set che si vuole selezionare
-def get_set(filename, data, alg): 
+def get_set(filename, data, alg, labels = False): 
   list = load_list(filename, alg)
   list = [int(i) for i in list] 
   X = data.iloc[list, :]
-  return X
+  if labels:
+    y = X['isFraud']
+    X.drop(columns=['isFraud'], axis = 1, inplace = True)
+    return X, y
+  else:
+    X.drop(columns=['isFraud'], axis = 1, inplace = True)
+    return X
 
 
 
