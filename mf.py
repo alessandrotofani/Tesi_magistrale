@@ -136,17 +136,21 @@ def sig_cols(t_variable, dataset, liv_sign = 0.95):
     print(len(num_sign_col), ' significative columns on ', len(dataset.columns), 'total columns')
     return num_sign_col
 
-def get_sign_cols(count, liv_sign = 0.95):
+def get_sign_cols(count, liv_sign = 0.95): # restituisce la lsta con le feature significative
+    '''
+    in 
+    count: dizionario con i conteggio per ogni feature
+    liv_sign: livello di significatività del test statistico
+    out
+    cat_col_sign: lista con i nomi delle feature significative
+    '''
     from scipy.stats import chi2_contingency 
 
     stat = {}
     p = {}
     dof = {}
     expected = {}
-
-    # dizionari che contengono i nomi delle feature significative e non 
     cat_col_sign = []
-#     cat_col_not_sign = []
 
     for col in count:
         stat[col], p[col], dof[col], expected[col] = chi2_contingency(count[col]) 
@@ -164,7 +168,15 @@ def get_sign_cols(count, liv_sign = 0.95):
 ## Analisi correlazioni ##
 #####################################################################################################
 
-def dropColNotSign(dataset, col_sign, not_ignore = None):
+def dropColNotSign(dataset, col_sign, not_ignore = None): # rimuove le feature non significative
+  '''
+  in
+  dataset: dataset
+  cols_sign: lista con le efature significative
+  not_ignore: feature da non rimuovere
+  out
+  dataset: dataset con solo le feature significative
+  '''
   col_not_sign = []
   for col in dataset.columns:
     if col not in col_sign and col != not_ignore:
@@ -172,16 +184,29 @@ def dropColNotSign(dataset, col_sign, not_ignore = None):
   dataset = dataset.drop(col_not_sign, axis=1)            
   return dataset
 
-def corr_matrix_plot(dataset, corr_matrix):
+def corr_matrix_plot(dataset, corr_matrix): # plotta la matrice di correlazione
+    '''
+    in 
+    dataset: dataset
+    corr_matrix: matrice di correlazione
+    '''
     f = plt.figure(figsize=(20, 20))
     plt.matshow(corr_matrix, fignum=f.number)
     plt.xticks(range(dataset.shape[1]), dataset.columns, fontsize=10, rotation=90)
     plt.yticks(range(dataset.shape[1]), dataset.columns, fontsize=10)
     cb = plt.colorbar()
     cb.ax.tick_params(labelsize=14)
-    plt.title('Correlation Matrix', fontsize=16);
+    plt.title('Correlation Matrix', fontsize=16)
+    return 
     
-def highest_correlations(corr_matrix, tresh = 0.8):
+def highest_correlations(corr_matrix, tresh = 0.8): # restituisce le feature con correlazione sopra soglia
+    '''
+    in
+    corr_matrix: matrice di correlazione
+    tresh: soglia sulla correlazione
+    out
+    corr_sorted: dizionario con le correlazioni con valore sopra soglia
+    '''
     corr_matrix_abs = corr_matrix.abs()
     corr_matrix_abs = corr_matrix_abs.unstack()
     corr_sorted = corr_matrix_abs.sort_values(kind="quicksort")
@@ -190,7 +215,13 @@ def highest_correlations(corr_matrix, tresh = 0.8):
     corr_sorted = corr_sorted[corr_sorted>tresh]
     return corr_sorted
 
-def corr_dict(corr):
+def corr_dict(corr): # restituisce il dizionario con le correlazioni
+    '''
+    corr: matrice con le correlaioni
+    out
+    corr_dict: dizionario con le correlazioni
+    corr_list: lista con le features correlate
+    '''
     corr_dict = {}
     corr_list = []
     for col1, df in corr.groupby(level=0):
@@ -206,7 +237,13 @@ def corr_dict(corr):
 ## Preprocessing ##
 #####################################################################################################
 
-def min_max_scaling(data):
+def min_max_scaling(data): # fa il min max scaling del dataset
+  '''
+  in
+  data: dataset
+  out
+  data: dataset con i feature values scalati 
+  '''
   col_not_to_scale = ['isFraud','TransactionID', 'TransactionDT']
   for col in data.columns:
     if col not in col_not_to_scale:
@@ -214,7 +251,16 @@ def min_max_scaling(data):
        
   return data
 
-def split(dataset, test_size):  
+def split(dataset, test_size): # splitta il dataset in train set e labels
+  '''
+  in
+  dataset: dataset
+  test_size: size del test set
+  out
+  X_train: train set
+  X_val: validation set
+  y_train, y_val: labels
+  '''
   from sklearn.model_selection import train_test_split
   y = dataset['isFraud']
   X = dataset.drop(['isFraud'], axis = 1)
@@ -222,7 +268,14 @@ def split(dataset, test_size):
   X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=test_size, random_state=42)
   return X_train, X_val, y_train, y_val
 
-def ap_metric(clf, X_val, y_val, proba):
+def ap_metric(clf, X_val, y_val, proba): # plotta la mean average precision
+  '''
+  in
+  clf: modello trainato
+  X_val: validation set
+  y_val: labels
+  proba: True per i modelli che supportano predict_proba
+  '''
   from sklearn.metrics import precision_recall_curve
   from sklearn.metrics import plot_precision_recall_curve
   from sklearn.metrics import average_precision_score
@@ -243,7 +296,14 @@ def ap_metric(clf, X_val, y_val, proba):
 ## Performance measure ##
 #####################################################################################################
 
-def performance(clf, X_val, y_val, proba = True):
+def performance(clf, X_val, y_val, proba = True): # plotta la curva roc e la mean average precision
+  '''
+  in
+  clf: modello trainato
+  X_val: validation set
+  y_val: labels
+  proba: True per i modelli che supportano predict_proba
+  '''
   from sklearn.metrics import plot_roc_curve
 
   plot_roc_curve(clf, X_val, y_val)
@@ -252,7 +312,13 @@ def performance(clf, X_val, y_val, proba = True):
   ap_metric(clf, X_val, y_val, proba)
   return
 
-def conf_matrix(clf, X_val, y_val):
+def conf_matrix(clf, X_val, y_val): # plotta la confusion matrix
+  '''
+  in
+  clf: modello trainato
+  X_val: validation set
+  y_val: labels 
+  '''
   from sklearn.metrics import plot_confusion_matrix
 
   # disp = plot_confusion_matrix(classifier, X_val, y_val, display_labels=class_names, cmap=plt.cm.Blues, normalize=False)
@@ -274,7 +340,14 @@ def conf_matrix(clf, X_val, y_val):
 #     clf = pickle.load(f)
 #   return clf
 
-def col_not_sign(dataset, sign_cols):
+def col_not_sign(dataset, sign_cols): # restituisce le colonne non significative
+  '''
+  in
+  dataset: dataset
+  sign_cols: lista col nome delle feature significative
+  out
+  col_not_sign: lista col nome delle feature non significative
+  '''
   col_not_sign = []
   for col in dataset.columns:
     if col not in sign_cols and col != 'TransactionID':
@@ -282,26 +355,57 @@ def col_not_sign(dataset, sign_cols):
   col_not_sign.append('isFraud')
   return col_not_sign
 
-def get_col(data):
+def get_col(data): # restituisce le colonne dal dataframe
+  '''
+  in
+  data: dataset
+  out
+  cols: lista con le colonne del dataset 
+  '''
   cols = []
   for col in data.columns:
       if col != 'isFraud':
         cols.append(col)
   return cols
 
-def select_days(dataset, days):
+def select_days(dataset, days): # seleziona i dati fino al giorno indicato
+  '''
+  in 
+  dataset: dataset
+  days: numero di giorni che si vogliono selezionare
+  out
+  dataset: dataset con il numero di giorni selezionato
+  '''
   sec = 86400
   tot = days * sec
   dataset = dataset[dataset['TransactionDT'] < tot]
   return dataset
 
-def easy_ensemble(n_subsets, X_train, y_train):
+def easy_ensemble(n_subsets, X_train, y_train): # applica l'easy ensemble al set specificato
+  '''
+  in
+  n_subsets: numero di subset che si vogliono formare
+  X_train: train set
+  y_train: labels
+  out
+  X_trainres: dizionario con train set resampled
+  y_trainres: dizionario con le labels 
+  '''
   from imblearn.ensemble import EasyEnsemble 
   ee = EasyEnsemble(random_state=42, n_subsets=n_subsets)
   X_trainres, y_trainres = ee.fit_sample(X_train, y_train)
   return X_trainres, y_trainres
 
-def roc_auc_subset(clf, X_train, y_train, X_val, y_val, n_subsets = 5):
+def roc_auc_subset(clf, X_train, y_train, X_val, y_val, n_subsets = 5): # plotta la curva roc auc sul numero di subset specificato
+  '''
+  in
+  clf: modello trainato
+  X_train: train set
+  y_train: labels
+  X_val: validation set
+  y_val: labels
+  n_subsets: numero di subsets di cui plottare la roc
+  '''
   from sklearn.metrics import auc
   from sklearn.metrics import plot_roc_curve
   from xgboost import XGBClassifier
@@ -347,35 +451,62 @@ def roc_auc_subset(clf, X_train, y_train, X_val, y_val, n_subsets = 5):
   return
 
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html
-def f1(model, X_val, y_val):
+def f1(model, X_val, y_val): # calcola lo score f1 
+  '''
+  in
+  model: modello trainato
+  X_val: validation set
+  y_val: labels
+  out
+  f1_score: f1 score
+  '''
   from sklearn.metrics import f1_score
   y_pred = model.predict(X_val) 
   return f1_score(y_val, y_pred, average='macro')
 
-def loss_by_day(X_test, y_test, clf):
+def loss_by_day(X_test, y_test, clf): # calcola la lossa e la cm per giorno
+  '''
+  in
+  X_test: test set 
+  y_test: labels
+  clf: modello trainato
+  out
+  loss: dizionario con le loss calcolate per giorno
+  cm: dizionario con le confusion matrix calcolate per giorno
+  '''
   from sklearn.metrics import log_loss, confusion_matrix
-  y_pred = clf.predict_proba(X_test)
-  pred_df = pd.DataFrame(data=y_pred, index = X_test.index)
+  y_pred = clf.predict_proba(X_test) # labels predette (probabilità)
+  pred_df = pd.DataFrame(data=y_pred, index = X_test.index) # dataframe che conterrà labels, labels predette, day
   pred_df['day'] = X_test['day']
   pred_df['label'] = y_test
   pred_df['pred_label'] = clf.predict(X_test)
 
-  splitted = {}
-  for i in range(7):
+  splitted = {} # dizionario contenete il dataset splittato per giorni 
+  for i in range(7): # loop per splittare il dataset 
     splitted[i] = pred_df[pred_df['day'] == i]
   
   loss = {}
   cm = {}
   for i in range(7):
-    labels = splitted[i]['label']
-    pred_vector =  splitted[i][[0,1]]
-    pred_label = splitted[i]['pred_label']
-    loss[i] = log_loss(labels, pred_vector).round(4)
-    cm[i] = confusion_matrix(labels, pred_label, normalize = 'true')
+    labels = splitted[i]['label'] # seleziono la label
+    pred_vector =  splitted[i][[0,1]] # seleziono il vettore con le probabilità
+    pred_label = splitted[i]['pred_label'] # seleziono la label predetta
+    loss[i] = log_loss(labels, pred_vector).round(4) # calcolo la loss
+    cm[i] = confusion_matrix(labels, pred_label, normalize = 'true') # calcolo la consufion matrix
   
   return loss, cm
 
-def fraud_ratio_per_feature(data, feature, verbose = False):
+def fraud_ratio_per_feature(data, feature, verbose = False): # calcola i rate di transazioni fraudolente 
+  '''
+  in 
+  data: dataset 
+  feature: feature (categorica) di cui si vuole calcolare il rate 
+  verbose: se True, restituisce più valori
+  out
+  ratio: rate di transazioni fraudolente sul totale
+  fraud_count: numero di transazioni fraudolente
+  tot: numero di transazioni totali in cui la feature ha valore pari a 1 
+  '''
   subset = data[data[feature] == 1]
   tot = subset.shape[0]
   fraud_count = subset[subset['isFraud'] == 1].sum()[0]
@@ -385,11 +516,19 @@ def fraud_ratio_per_feature(data, feature, verbose = False):
   else:
     return ratio, fraud_count, tot
 
-def ratio_dictionary(clf, data, n_features):
-  feature_score = clf.get_booster().get_score(importance_type='gain')
-  important_features = sorted(feature_score, key=feature_score.get, reverse=True)[:n_features]
-  ratio_dict = {}
-  for feature in important_features:
+def ratio_dictionary(clf, data, n_features): # calcola i rate e restituisce il dizionario 
+  '''
+  in
+  clf: modello trainato
+  data: dataset
+  n_features: numero massimo di features da considerare
+  out
+  ratio_dict: dizionario con il rate di transazioni fraudolente per feature ordinate per score 
+  '''
+  feature_score = clf.get_booster().get_score(importance_type='gain') # calcolo lo score 
+  important_features = sorted(feature_score, key=feature_score.get, reverse=True)[:n_features] #ordino le features 
+  ratio_dict = {} # inizializzo il dizionario 
+  for feature in important_features: # loop calcolare il rate 
     ratio_dict[feature] = list(fraud_ratio_per_feature(data, feature, verbose = True))
     if ratio_dict[feature][0] == 0:
       del ratio_dict[feature]
@@ -399,7 +538,14 @@ def ratio_dictionary(clf, data, n_features):
 ## Autoencoder  ##
 #####################################################################################################
 
-def mse_calc(X, X_pred):
+def mse_calc(X, X_pred): # calcola gli mse 
+  '''
+  in
+  X: labels
+  X_pred: label predette
+  out
+  err: mse 
+  '''
   from sklearn.metrics import mean_squared_error
   err = []
 
@@ -408,17 +554,34 @@ def mse_calc(X, X_pred):
 
   return err
 
-def mse(safe, fraud, autoencoder):
+def mse(safe, fraud, autoencoder): # calcola gli mse 
+  '''
+  in
+  safe: dataset con transazioni safe
+  fraud: dataset con transazioni fraudolente
+  autoencoder: AE trainato
+  out
+  safe_errors: mse per le transazioni safe
+  fraud_errors: mse per le transazioni fraud 
+  '''
 
-  safe_predicted = autoencoder.predict(safe)
+  safe_predicted = autoencoder.predict(safe) # label predette 
   fraud_predicted = autoencoder.predict(fraud)
 
-  safe_errors = mse_calc(safe, safe_predicted)
+  safe_errors = mse_calc(safe, safe_predicted) # calcola gli mse 
   fraud_errors = mse_calc(fraud, fraud_predicted)
 
   return safe_errors, fraud_errors
 
-def make_df(X_val, fraud_train, autoencoder):
+def make_df(X_val, fraud_train, autoencoder): # crea un dataframe con i mse
+  '''
+  in 
+  X_val: validation set solo con le transazioni safe
+  fraud_train: train set di transazioni fraudolente
+  autoencoder: AE trainato
+  out
+  mse_df: dataframe contenete gli mse
+  '''
   safe_errors, fraud_errors = mse(X_val, fraud_train, autoencoder) 
 
   safe_df = pd.DataFrame({'mse': safe_errors, 'anomaly': np.zeros(len(safe_errors))})
@@ -428,25 +591,36 @@ def make_df(X_val, fraud_train, autoencoder):
 
   return mse_df
 
-# confusion matrix
 # https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
-def performance_autoencoder(X_test, fraud_test, autoencoder, soglia):
+def performance_autoencoder(X_test, fraud_test, autoencoder, soglia): # permette di valutare le performance dell'autoencoder
+  '''
+  in
+  X_test: test set solo con transazioni safe
+  fraud_test: test set solo con transazioni fraudolente
+  autoencoder: AE trainato
+  soglia: soglia usata per discriminare le transazioni a seconda del mse 
+  out
+  cm: confusion matrix
+  recall: recall del modello
+  average_precision: mean average precision del modello
+  f1: f1 score del modello
+  '''
   from sklearn.metrics import confusion_matrix
   from sklearn.metrics import recall_score
   from sklearn.metrics import average_precision_score
   from sklearn.metrics import f1_score
 
-  mse_df = make_df(X_test, fraud_test, autoencoder)
-  y_pred = []
-  for mse in mse_df['mse']:
+  mse_df = make_df(X_test, fraud_test, autoencoder) # dataframe contenente i mse 
+  y_pred = [] # labels predette 
+  for mse in mse_df['mse']: # loop che confronta gli mse con la soglia per calcolare le labels
     if mse > soglia:
       y_pred.append(0)
     if mse < soglia:
       y_pred.append(1)
 
-  y_safe = np.zeros(X_test.shape[0])
+  y_safe = np.zeros(X_test.shape[0]) 
   y_fraud = np.ones(fraud_test.shape[0])
-  y_true = np.concatenate((y_safe, y_fraud))
+  y_true = np.concatenate((y_safe, y_fraud)) # array con le label 
 
   recall =  recall_score(y_true, y_pred, average='macro')
   print('Recall: ', recall)
@@ -464,7 +638,13 @@ def performance_autoencoder(X_test, fraud_test, autoencoder, soglia):
 #####################################################################################################
 
 # Riferimento cm: https://www.tensorflow.org/tutorials/structured_data/imbalanced_data
-def plot_cm(labels, predictions, p=0.5):
+def plot_cm(labels, predictions, p=0.5): # plotta la confusion matrix
+  '''
+  in
+  labels: labels
+  predictions: labels predette dal modello
+  p: treshold 
+  '''
   from sklearn.metrics import confusion_matrix
   cm = confusion_matrix(labels, predictions > p)
   plt.figure(figsize=(5,5))
@@ -475,7 +655,13 @@ def plot_cm(labels, predictions, p=0.5):
   return
 
 # Riferimento auc: https://www.dlology.com/blog/simple-guide-on-how-to-generate-roc-plot-for-keras-classifier/
-def plot_roc(name, labels, predictions, **kwargs):
+def plot_roc(name, labels, predictions, **kwargs): # plotta la roc auc curve 
+  '''
+  in
+  name: label della funzione plottata
+  labels: labels
+  predictions: labels predette dal modello
+  '''
   from sklearn.metrics import roc_curve, auc
 
   fp, tp, _ = roc_curve(labels, predictions)
@@ -489,7 +675,13 @@ def plot_roc(name, labels, predictions, **kwargs):
   ax = plt.gca()
   return
 
-def plot_ap(name, y_test, y_pred, **kwargs):
+def plot_ap(name, y_test, y_pred, **kwargs): # plotta la mean average precision
+  '''
+  in 
+  name: label della funzione plottata
+  y_test: labels
+  y_pred: labels predette
+  '''
   from sklearn.metrics import precision_recall_curve, average_precision_score
 
   precision, recall, _ = precision_recall_curve(y_test, y_pred)
@@ -508,7 +700,14 @@ def plot_ap(name, y_test, y_pred, **kwargs):
 ## Catboost ##
 #####################################################################################################
 
-def feature_scaling(data):
+# viene fatto in un secondo file nel caso in cui fosse necessario fare ee o smote 
+def feature_scaling(data): # permette di fare il min max scaling della feature temporale
+  '''
+  in
+  data: dataset
+  out
+  data: dataset il tempo scalato 
+  '''
   from sklearn import preprocessing
 
   min_max_scaler = preprocessing.MinMaxScaler()
@@ -518,13 +717,27 @@ def feature_scaling(data):
   return data
 
 
-def ratio(data):
+def ratio(data): # permette di ottenere il rate di eventi safe su quelli fraudolenti
+  '''
+  input 
+  data: dataset
+  output
+  r: rate 
+  '''
   fraud = (data['isFraud'] == 1).sum()
   safe = (data['isFraud'] == 0).sum()
   r = np.ceil(safe/fraud)
   return r
 
-def encoding(data, cat_cols):
+def encoding(data, cat_cols): # serve per il label encoding
+  '''
+  input
+  data: dataset
+  cat_cols: lista contenente i nomi delle colonne categoriche
+  output
+  data: dataset con le feature categoriche encoded
+  categorical_names: dizionare che mappa il label encoding al feature value
+  '''
   from sklearn import preprocessing
   categorical_col=load_list(cat_cols)
   categorical_features = [data.columns.get_loc(col) for col in categorical_col if col in data]
@@ -536,8 +749,15 @@ def encoding(data, cat_cols):
       categorical_names[feature] = le.classes_
   return data, categorical_names
 
-# https://stackoverflow.com/questions/46966690/change-a-column-string-into-int-in-python-list
-def to_list(data, cat_feature_list):
+# Riferimento: https://stackoverflow.com/questions/46966690/change-a-column-string-into-int-in-python-list
+def to_list(data, cat_feature_list): # permette di ritornare i valori nel datfrae ome lista
+  '''
+  input
+  data: dataset
+  cat_feature_list: lista contente i nomi delle feature categoriche
+  output
+  mylist: dataset trasformato in lista, in cui gli elementi nelle colonne categoriche sono interi
+  '''
   my_list = data.values.tolist()
   for row in my_list:
     for col in cat_feature_list:
@@ -549,8 +769,13 @@ def to_list(data, cat_feature_list):
 ## XAI ##
 #####################################################################################################
 
-# salva la lista list nel path specificato assegnando filename come nome del file
-def save_list(filename, list):
+
+def save_list(filename, list):  # salva la lista list nel path specificato assegnando filename come nome del file
+  '''
+  input
+  filename: nome che si vuole assegnare al file contenente la lista da salvare
+  list: lista che si vuole salvare
+  '''
   import os
   if not os.path.isfile('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt'):
       with open(filename+'.txt', 'w') as f:
@@ -558,8 +783,15 @@ def save_list(filename, list):
               f.write("%s " % item)
   return
 
-# serve per caricare la lista con gli id delle righe del dataframe
-def load_list(filename, alg = None):
+
+def load_list(filename, alg = None): # serve per caricare la lista con gli id delle righe del dataframe
+  '''
+  input
+  filename: nome del file che contiene la lista che si vuole caricare
+  alg: nome dell'algoritmo 
+  output
+  list: lista contente gli id delle righe del dataframe su cui l'algoritmo si è allenato/validato/testato
+  '''
   if alg is None:       
     file = open('/content/drive/MyDrive/Tesi_magistrale/Dataset/IEEE/Output/'+filename+'.txt', "r")
   else:
@@ -570,12 +802,16 @@ def load_list(filename, alg = None):
   list.pop() # levo l'ultimo elemento che è vuoto
   return list
 
-# serve per selezionare il dataset dati gli id
-# bisogna usare lo stesso set usato nella parte di training del modello
-# filename: nome del file che contiene la lista degli id
-# alg: nome dell'algoritmo 
-# data: train, test o val. Set che si vuole selezionare
-def get_set(filename, data, alg, labels = False): 
+def get_set(filename, data, alg, labels = False): # serve per selezionare il dataset dati gli id; bisogna usare lo stesso set usato nella parte di training del modello
+  ''' 
+  input
+  filename: nome del file che contiene la lista degli id
+  alg: nome dell'algoritmo
+  data: train, test o val. Set che si vuole selezionare
+  output
+  X: set senza la label
+  y: labels
+  '''
   list = load_list(filename, alg)
   list = [int(i) for i in list] 
   X = data.iloc[list, :]
@@ -601,15 +837,15 @@ def feature_engineering(data):
   output
   data: dataset connuove feature ingegnerizzate
   '''
-  data = device_name(data)
-  data = device(data) # raggruppo il nome del device 
-  data = os_(data)
-  data = browser(data)
-  data = screen(data)
-  data = id_23_34(data)
-  data.drop(columns = ['DeviceInfo', 'id_30', 'id_31', 'id_33', 'id_34', 'id_23'], inplace=True)
+  data = device_name(data) # raggruppo il nome del device 
+  data = device(data) # seleziono la versione del device
+  data = os_(data) # seleziono il nome e la versione del sistema operativo
+  data = browser(data) # seleziono nome e versione del browser
+  data = screen(data) # seleziono sreen heigth e width 
+  data = id_23_34(data) # seleziono la seconda parte di questi id
+  data.drop(columns = ['DeviceInfo', 'id_30', 'id_31', 'id_33', 'id_34', 'id_23'], inplace=True) # levo le colonne da cui ho creato le nuove features
 
-  data = date(data)
+  data = date(data) # costrusco una colonna con l'ora e una con il giorno corrispondente alla transazione
   return data
 
 def device_name(data):
@@ -696,6 +932,7 @@ def get_important_features_by_ratio(data, tresh=0.4):
   tresh: soglia sotto la quale eliminare le feature che presentano un rate inferiore 
   output
   important_features: dizionario contenente le feature con rate di transazioni fradolente ordinate per valore e sopra soglia
+  feature_ratio: dizionario che contiene i rate per feature
   '''
   cat_features = load_list('cat_sign_col') # lista con i nomi delle vecchie colonne contenenti le features categoriche 
   eng_features = ['device_version', 'os_name', 'os_version', 'browser_name', 'browser_version', 'screen_w', 'screen_h', 'day', 'hour'] # nomi delle nuove feature ottenute tramite la funzione feature_engineering
@@ -719,4 +956,4 @@ def get_important_features_by_ratio(data, tresh=0.4):
     if feature_ratio[feature] < tresh:
       important_features.remove(feature)
 
-  return important_features
+  return important_features, feature_ratio
