@@ -595,7 +595,14 @@ def get_set(filename, data, alg, labels = False):
 
 # Riferimento: https://www.kaggle.com/davidcairuz/feature-engineering-lightgbm
 def feature_engineering(data):
-  data = device(data)
+  '''
+  input
+  data: dataset su cui performare il feature engineering
+  output
+  data: dataset connuove feature ingegnerizzate
+  '''
+  data = device_name(data)
+  data = device(data) # raggruppo il nome del device 
   data = os_(data)
   data = browser(data)
   data = screen(data)
@@ -642,7 +649,7 @@ def os_(data):
 
 def browser(data):
   data['browser_name'] = data['id_31'].str.split(' ', expand=True)[0]
-  data['bro wser_version'] = data['id_31'].str.split(' ', expand=True)[1]
+  data['browser_version'] = data['id_31'].str.split(' ', expand=True)[1]
   return data
 
 def screen(data):
@@ -659,3 +666,57 @@ def date(data):
   data['day'] = np.floor((data['TransactionDT'] / (3600 * 24) - 1) % 7)
   data['hour'] = np.floor(data['TransactionDT'] / 3600) % 24
   return data
+
+def fraud_ratio_per_time(data, day = False, hour = False):
+  '''
+  input
+  data: dataset dopo la fase di feature_engineering
+  day: se True, il conteggio viene fatto per giorni
+  hour: se True, il conteggio viene fatto per ore
+  output
+  ratio: dizionario con (unità_di_tempo, rate)
+  '''
+  ratio = {}
+  if day:
+    col = 'day'
+    n = 7
+  if hour:
+    col = 'hour'
+    n = 24
+  for i in range(n):
+    fraud = data[data[col] == i].sum()[0]
+    tot = data[data[col] == i].shape[0]
+    ratio[i] = (fraud / tot).round(3)
+  return ratio
+
+def get_important_features_by_ratio(data, tresh=0.4):
+  ''' 
+  input
+  data: dataset dopo la fase di one hoe encoding e feature engineering
+  tresh: soglia sotto la quale eliminare le feature che presentano un rate inferiore 
+  output
+  important_features: dizionario contenente le feature con rate di transazioni fradolente ordinate per valore e sopra soglia
+  '''
+  cat_features = load_list('cat_sign_col') # lista con i nomi delle vecchie colonne contenenti le features categoriche 
+  eng_features = ['device_version', 'os_name', 'os_version', 'browser_name', 'browser_version', 'screen_w', 'screen_h', 'day', 'hour'] # nomi delle nuove feature ottenute tramite la funzione feature_engineering
+  cat_features_complete = cat_features + eng_features # lista con i nomi di tutte le features categoriche prima della fase di one hot encoding
+
+  cat_cols = [] # lista che conterrà i nomi delle features categoriche dopo la fase di one hot encoding e feature engineering
+  cols = data.columns.tolist()  # colonne presenti nel dataset
+
+  for col in cols: # loop per ottenere la lista di feature categoriche 
+    for string in cat_features_complete:
+      if string in col: # controllo che il nome della feature pre encoding sia nella lista delle nuove features
+        cat_cols.append(col)
+
+  feature_ratio = {} # dizionario che conterrà il rate per feature (feature: rate)
+  for col in cat_cols:
+    feature_ratio[col] = fraud_ratio_per_feature(data, col)
+
+  important_features = sorted(feature_ratio, key=feature_ratio.get, reverse=True) # ordino il dizionario per valore del rate
+
+  for feature in feature_ratio: # loop per eliminare le feature con rate sotto soglia
+    if feature_ratio[feature] < tresh:
+      important_features.remove(feature)
+
+  return important_features
