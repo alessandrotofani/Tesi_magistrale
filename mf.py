@@ -1,37 +1,55 @@
-import numpy as np # linear algebra
-import pandas as pd # data processing
+import numpy as np 
+import pandas as pd 
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 #####################################################################################################
-## Functions for mice ##
+## MICE ##
 #####################################################################################################
 
-def split_by_day(dataset, days): 
-    
+def split_by_day(dataset, days): # splitta il dataset in più giorni
+    '''
+    in
+    dataset: dataset da splittare
+    days: numero di giorni totali che si vogliono selezionare
+    out
+    data_splitted: dizionario i cui elementi sono i dataset relativi ad un determinato giorno (giorno: dataset_giornaliero)
+    '''  
     day = 86400 # secondi in un giorno
-
     # indici per il loop
     start = day
     end = day * 2 
 
-    data_splitted = {} # dizionario che contiene i vari set splittati per giorno
-    # loop per riempire il dizionario
-    for i in range(days):
+    data_splitted = {} # inizializzo il dizionario
+    for i in range(days): # loop per riempire il dizionario
         data_splitted[i] = dataset[(dataset['TransactionDT'] >= (start)) & (dataset['TransactionDT'] < (end - 1))]
         start += day
         end += day
-        
     return data_splitted
 
 def select_col_by_nan(dataset, tresh): # funzione per selezionare le colonne di un dataset in base al numero di NaN
-    cols = [] # lista che contiene le colonne con numero di NaN inferiore alla soglia 
+    '''
+    in
+    dataset: dataset con i nan
+    tresh: soglia sotto la quale le colonne vengono ignorate
+    out
+    cols: lista con le colonne con numero di nan inferiore alla soglia
+    '''
+    cols = [] # inizializzo la lista 
     for col in dataset.columns:
         if dataset[col].isna().sum() < tresh:
             cols.append(col)
     return cols
 
 def mice(dataset, days, tresh = 100000): # funzione che performa il MICE sul dataset selezionato
+    '''
+    in
+    dataset: dataset sul quale si vuole performare il mice
+    days: giorni totali sui quali si vuole fare la imputation
+    tresh: soglia sul numero di nan. Le colonne che hanno un numero di nan superiore alla soglia verranno eliminate
+    out
+    fitted: dizionario i cui elementi sono i dataset giornalieri su cui è stata fatta l'imputation (day: imputed_dataset)
+    '''
     from sklearn.experimental import enable_iterative_imputer
     from sklearn.impute import IterativeImputer
     
@@ -56,7 +74,16 @@ def mice(dataset, days, tresh = 100000): # funzione che performa il MICE sul dat
 ## Functions for eda ##
 #####################################################################################################
 
-def get_stat(dataset, mean = False, std = False):
+def get_stat(dataset, mean = False, std = False): # calcola la media o la deviazione standard delle feature 
+    '''
+    in
+    dataset: dataset 
+    mean: se True, calcola le medie
+    std: se True, calcola le deviazioni standard
+    out
+    means: dataframe con le medie calcolate per ogni feature
+    stds: dataframe con le deviazioni standard calcolate per ogni feature
+    '''
     col_to_drop = ['TransactionAmt','TransactionID','TransactionDT']
     if mean:
         means = dataset.groupby(['isFraud']).mean()
@@ -69,7 +96,16 @@ def get_stat(dataset, mean = False, std = False):
     else:
         print('Specificy if you want the mean or std')
     
-def get_subFrame(dataset, safe = False, fraud = False):
+def get_subFrame(dataset, safe = False, fraud = False): # serve per eliminare delle colonne dal dataframe e selezionare un sottoinsieme a seconda del tipo di transazione
+    '''
+    in
+    dataset: dataframe
+    safe: se True, seleziona le transazioni safe
+    fraud: se True, seleziona le transazioni fraudolente
+    out
+    safe_dataset: dataframe con le transazioni safe senza le colonne col_to_drop
+    fraud_dataset: dataframe con le transazioni fraudolente senza le colonne col_to_drop
+    '''
     col_to_drop = ['TransactionAmt','TransactionID','TransactionDT','isFraud']
     if safe:
         safe_dataset = dataset[dataset['isFraud']==0].drop(col_to_drop, axis = 1)
@@ -82,13 +118,27 @@ def get_subFrame(dataset, safe = False, fraud = False):
 
 from scipy import stats
 
-def diff(df):
+def diff(df): # calcola la differenza tra elementi di un dataframe
+    '''
+    in 
+    df: dataframe
+    out
+    res: differenza
+    '''
     res = {}
     for col in df.columns:
         res[col] = df[col][0] - df[col][1]
     return res
 
-def s(df_safe, df_fraud, stds):
+def s(df_safe, df_fraud, stds): # calcola la deviazione standard secondo la statistica della variabile t 
+    '''
+    in
+    df_safe: dataset con le transazioni safe
+    df_fraud: dataset con le transazioni fraudolente
+    stds: dizionario con le deviazioni standard    
+    out
+    res: dizionario con la deviazione std secondo la statistica di t per feature (feature: s)
+    '''
     res = {}
     for col in df_safe.columns:
         s0_2 = stds[col][0]**2
@@ -98,14 +148,31 @@ def s(df_safe, df_fraud, stds):
         res[col] = np.sqrt(s0_2 /n0 + s1_2 /n1)
     return res
 
-def t(mean, std, df_safe, df_fraud):
+def t(mean, std, df_safe, df_fraud): # calcola la variabile t di Student
+    ''' 
+    in
+    mean: dataframe con le medie per ogni feature
+    std: dizionario con le deviazioni standard
+    df_safe: dataset con le transazioni safe
+    df_fraud: dataset con le transazioni fraudolente
+    out
+    res: dizionario con la variabile t per ogni feature (feature: t)
+    '''
     res = {}
-    s_ = s(df_safe, df_fraud, std)
+    s_ = s(df_safe, df_fraud, std) # calcolo delle deviazioni standard
     for col in mean.columns:
         res[col] = diff(mean)[col] / s_[col]
     return res
 
-def v(df_safe, df_fraud, stds):
+def v(df_safe, df_fraud, stds): # calcola il parametro v, necessario per il test statistico
+    '''
+    in
+    df_safe: dataset con le transazioni safe
+    df_fraud: dataset con le transazioni fraudolente
+    stds: dizionario che contiene le deviazioni standard per feature
+    out
+    res: dizionario con parametro v calcolato per ogni feature (feature: v)
+    '''
     res = {}
     for col in df_safe.columns:
         s0_2 = stds[col][0]**2
@@ -118,14 +185,23 @@ def v(df_safe, df_fraud, stds):
         res[col] = np.ceil(v)
     return res
 
-def sig_cols(t_variable, dataset, liv_sign = 0.95):
+def sig_cols(t_variable, dataset, dof, liv_sign = 0.95): # restituisce la lista con le feature numeriche significative
+    '''
+    in
+    t_variable: dizionario contenete i valori della variabile t per feature (feature: t)
+    dataset: dataset contente le feature numeriche
+    dof: dizionario contenente i gradi di libertà per feature (feature: dof)
+    liv_sign: livello di significatività del test statistico
+    out
+    num_sign_col: lista con le feature numeriche significative
+    '''
     p_value = {}
     sig_cols = 0
     num_sign_col = []
 #     num_col_not_sign = []
 
     for col in dataset.columns:    
-        p_value[col] = 1 - stats.t.cdf(t_variable[col], df = dof[col])
+        p_value[col] = 1 - stats.t.cdf(t_variable[col], df = dof[col]) # questa funzione permette di ricavare il valore della cumulata dat t e i dof 
         if p_value[col] > liv_sign:
             num_sign_col.append(col)
             print('Feature ', col, 'has a pvalue of: ', p_value[col])
@@ -136,7 +212,7 @@ def sig_cols(t_variable, dataset, liv_sign = 0.95):
     print(len(num_sign_col), ' significative columns on ', len(dataset.columns), 'total columns')
     return num_sign_col
 
-def get_sign_cols(count, liv_sign = 0.95): # restituisce la lsta con le feature significative
+def get_sign_cols(count, liv_sign = 0.95): # restituisce la lista con le feature categoriche significative
     '''
     in 
     count: dizionario con i conteggio per ogni feature
@@ -152,7 +228,7 @@ def get_sign_cols(count, liv_sign = 0.95): # restituisce la lsta con le feature 
     expected = {}
     cat_col_sign = []
 
-    for col in count:
+    for col in count: # tramite la funzione di scikit calcola il valore del chi-quadro, il p-value, i gradi di libertà e il valore atteso del chi-quadro. 
         stat[col], p[col], dof[col], expected[col] = chi2_contingency(count[col]) 
         if p[col] < liv_sign:
             cat_col_sign.append(col)
@@ -327,18 +403,6 @@ def conf_matrix(clf, X_val, y_val): # plotta la confusion matrix
   # print(title)
   print(disp.confusion_matrix)
   return
-
-# def save_model(clf):
-#   import pickle
-#   with open('model.pkl','wb') as f:
-#     pickle.dump(clf,f)
-#   return
-
-# def load_model():
-#   import pickle
-#   with open('model.pkl', 'rb') as f:
-#     clf = pickle.load(f)
-#   return clf
 
 def col_not_sign(dataset, sign_cols): # restituisce le colonne non significative
   '''
@@ -903,14 +967,14 @@ def date(data):
   data['hour'] = np.floor(data['TransactionDT'] / 3600) % 24
   return data
 
-def fraud_ratio_per_time(data, day = False, hour = False):
+def fraud_ratio_per_time(data, day = False, hour = False): # 
   '''
   input
   data: dataset dopo la fase di feature_engineering
   day: se True, il conteggio viene fatto per giorni
   hour: se True, il conteggio viene fatto per ore
   output
-  ratio: dizionario con (unità_di_tempo, rate)
+  ratio: dizionario con (unità_di_tempo: rate)
   '''
   ratio = {}
   if day:
@@ -925,14 +989,14 @@ def fraud_ratio_per_time(data, day = False, hour = False):
     ratio[i] = (fraud / tot).round(3)
   return ratio
 
-def get_important_features_by_ratio(data, tresh=0.4):
+def get_important_features_by_ratio(data, tresh=0.4): # seleziona le feature categoriche che individuano le transazioni fraudolente con rate superiore alla soglia 
   ''' 
   input
   data: dataset dopo la fase di one hoe encoding e feature engineering
   tresh: soglia sotto la quale eliminare le feature che presentano un rate inferiore 
   output
   important_features: dizionario contenente le feature con rate di transazioni fradolente ordinate per valore e sopra soglia
-  feature_ratio: dizionario che contiene i rate per feature
+  feature_ratio: dizionario che contiene i rate per feature (feature: rate)
   '''
   cat_features = load_list('cat_sign_col') # lista con i nomi delle vecchie colonne contenenti le features categoriche 
   eng_features = ['device_version', 'os_name', 'os_version', 'browser_name', 'browser_version', 'screen_w', 'screen_h', 'day', 'hour'] # nomi delle nuove feature ottenute tramite la funzione feature_engineering
