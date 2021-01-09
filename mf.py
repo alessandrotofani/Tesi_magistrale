@@ -694,6 +694,7 @@ def performance_autoencoder(X_test, fraud_test, autoencoder, soglia): # permette
   print('F1 score: ', f1)
   cm = confusion_matrix(y_true, y_pred)
   print(cm)
+  plot_roc('Fraud', y_true, y_pred)
   
   return cm, recall, average_precision, f1
 
