@@ -398,7 +398,7 @@ def conf_matrix(clf, X_val, y_val): # plotta la confusion matrix
   from sklearn.metrics import plot_confusion_matrix
 
   # disp = plot_confusion_matrix(classifier, X_val, y_val, display_labels=class_names, cmap=plt.cm.Blues, normalize=False)
-  disp = plot_confusion_matrix(clf, X_val, y_val, cmap=plt.cm.Blues, normalize=None)
+  disp = plot_confusion_matrix(clf, X_val, y_val, cmap=plt.cm.Blues, normalize=None, values_format='d')
   disp.ax_.set_title('Confusion matrix')
   # print(title)
   print(disp.confusion_matrix)
