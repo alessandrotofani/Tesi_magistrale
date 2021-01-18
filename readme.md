@@ -29,6 +29,9 @@
 
 `4_SHAP.ipynb`: contiene l'implementazione del calcolo degli shapley values. Vengono caricati i modelli, e poi viene eseguito l'algoritmo. 
 
+### Dinamic model
+`5_Dinamic_model.ipynb`: contiene l'implementazione del modello dinamico. Work in progress ...
+
 ### Modulo 
 `mf.py` contiene tutte le funzioni custom utilizzate nei notebook precedenti. 
 
