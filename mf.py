@@ -404,6 +404,44 @@ def conf_matrix(clf, X_val, y_val): # plotta la confusion matrix
   print(disp.confusion_matrix)
   return
 
+def tresh(soglie, y_proba, y_true, cmap): # printa le metriche e la cm per le varie soglie
+  '''
+  in
+  soglie: lista contenente le soglie di probabilità
+  y_proba: array con le probabilità
+  y_true: labels
+  out
+  prec: precision
+  rec: recall
+  f: f1
+  '''
+  from sklearn.metrics import f1_score, recall_score, precision_score
+  precision = []
+  recall = []
+  f1 = []  
+
+  for p in soglie:
+    y_pred = []
+    for q in y_proba:
+      if q[1] > p:
+        y_pred.append(1)
+      else:
+        y_pred.append(0)
+    prec = precision_score(y_true, y_pred,  average='binary').round(2)
+    precision.append(prec)
+    rec = recall_score(y_true, y_pred, average='binary').round(2)
+    recall.append(rec)
+    f = f1_score(y_true, y_pred, average="binary").round(2)
+    f1.append(f)
+    print('Soglia: ', p)
+    print('F1 score: ',f)
+    print('Recall: ', rec)
+    print('Precision: ', prec)
+    print('\n')
+    plot_cm(y_true, y_proba[:,1], cmap, p)
+    print('\n')
+  return prec, rec, f
+
 def col_not_sign(dataset, sign_cols): # restituisce le colonne non significative
   '''
   in
@@ -526,9 +564,9 @@ def f1(model, X_val, y_val): # calcola lo score f1
   '''
   from sklearn.metrics import f1_score
   y_pred = model.predict(X_val) 
-  return f1_score(y_val, y_pred, average='macro')
+  return f1_score(y_val, y_pred, average='binary')
 
-def loss_by_day(X_test, y_test, clf): # calcola la lossa e la cm per giorno
+def loss_by_day(X_test, y_test, clf): # calcola la loss e la cm per giorno
   '''
   in
   X_test: test set 
@@ -686,11 +724,11 @@ def performance_autoencoder(X_test, fraud_test, autoencoder, soglia): # permette
   y_fraud = np.ones(fraud_test.shape[0])
   y_true = np.concatenate((y_safe, y_fraud)) # array con le label 
 
-  recall =  recall_score(y_true, y_pred, average='macro')
+  recall =  recall_score(y_true, y_pred, average='binary')
   print('Recall: ', recall)
   average_precision = average_precision_score(y_true, y_pred)
   print('Average Precision: ', average_precision)
-  f1 = f1_score(y_true, y_pred, average='macro')
+  f1 = f1_score(y_true, y_pred, average='binary')
   print('F1 score: ', f1)
   cm = confusion_matrix(y_true, y_pred)
   print(cm)
@@ -703,7 +741,7 @@ def performance_autoencoder(X_test, fraud_test, autoencoder, soglia): # permette
 #####################################################################################################
 
 # Riferimento cm: https://www.tensorflow.org/tutorials/structured_data/imbalanced_data
-def plot_cm(labels, predictions, p=0.5): # plotta la confusion matrix
+def plot_cm(labels, predictions, cmap , p=0.5): # plotta la confusion matrix
   '''
   in
   labels: labels
@@ -713,10 +751,11 @@ def plot_cm(labels, predictions, p=0.5): # plotta la confusion matrix
   from sklearn.metrics import confusion_matrix
   cm = confusion_matrix(labels, predictions > p)
   plt.figure(figsize=(5,5))
-  sns.heatmap(cm, annot=True, fmt="d")
+  sns.heatmap(cm, annot=True, fmt="d", cmap=cmap)
   plt.title('Confusion matrix @{:.2f}'.format(p))
   plt.ylabel('Actual label')
   plt.xlabel('Predicted label')
+  plt.show()
   return
 
 # Riferimento auc: https://www.dlology.com/blog/simple-guide-on-how-to-generate-roc-plot-for-keras-classifier/
