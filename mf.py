@@ -741,7 +741,7 @@ def performance_autoencoder(X_test, fraud_test, autoencoder, soglia): # permette
 #####################################################################################################
 
 # Riferimento cm: https://www.tensorflow.org/tutorials/structured_data/imbalanced_data
-def plot_cm(labels, predictions, cmap , p=0.5): # plotta la confusion matrix
+def plot_cm(labels, predictions, cmap , p=0.5, dynamic = False): # plotta la confusion matrix
   '''
   in
   labels: labels
@@ -749,7 +749,10 @@ def plot_cm(labels, predictions, cmap , p=0.5): # plotta la confusion matrix
   p: treshold 
   '''
   from sklearn.metrics import confusion_matrix
-  cm = confusion_matrix(labels, predictions > p)
+  if not dynamic:
+    cm = confusion_matrix(labels, predictions > p)
+  else:
+    cm = confusion_matrix(labels, predictions)
   plt.figure(figsize=(5,5))
   sns.heatmap(cm, annot=True, fmt="d", cmap=cmap)
   plt.title('Confusion matrix @{:.2f}'.format(p))
