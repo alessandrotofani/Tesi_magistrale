@@ -35,6 +35,8 @@
 ### Federated learning
 `6_Federated.ipynb`: implementazione del federated learning. Viene usata la NN definita in `3_Neural_Net.ipynb` senza il primo layer. 
 
+[PCA kaggle dataset](https://www.kaggle.com/alessandrotofani/credit-card-fraud-detection): implementazione NN su dataset kaggle con PCA. 
+
 ### Modulo 
 `mf.py` contiene tutte le funzioni custom utilizzate nei notebook precedenti. 
 
