@@ -30,7 +30,10 @@
 `4_SHAP.ipynb`: contiene l'implementazione del calcolo degli shapley values. Vengono caricati i modelli, e poi viene eseguito l'algoritmo. 
 
 ### Dinamic model
-`5_Dinamic_model.ipynb`: contiene l'implementazione del modello dinamico. Work in progress ...
+`5_Dinamic_model.ipynb`: contiene l'implementazione del modello dinamico. Viene creata una classe per gestire i vari modelli. Sono usati i seguenti modelli: SVM, NN, XGBoost. Dopo il training dei modelli, quello più performante è portato avanti. 
+
+### Federated learning
+`6_Federated.ipynb`: implementazione del federated learning. Viene usata la NN definita in `3_Neural_Net.ipynb` senza il primo layer. 
 
 ### Modulo 
 `mf.py` contiene tutte le funzioni custom utilizzate nei notebook precedenti. 
