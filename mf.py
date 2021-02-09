@@ -936,6 +936,23 @@ def get_set(filename, data, alg, labels = False): # serve per selezionare il dat
 ## Feature Engineering  ##
 #####################################################################################################
 
+def new_processing(data):
+  def min_max_scaling(data): # fa il min max scaling del dataset
+    col_to_scale = ['TransactionDT','os_version','browser_version','screen_w','screen_h','day','hour']
+    for col in data.columns:
+      if col in col_to_scale:
+        data[col] = pd.to_numeric(data[col], errors='coerce')
+        data[col] = (data[col] - data[col].min()) / (data[col].max() - data[col].min())
+    return data
+  data.drop(data.columns[data.columns.str.contains('unnamed',case = False)],axis = 1, inplace = True)
+  data = feature_engineering(data)
+  data = data.fillna(value=0)
+  data = data.replace(to_replace=['unknown'], value = 0)
+  data = min_max_scaling(data)
+  data = data.fillna(value=0)
+  data.drop(columns=['TransactionID'], inplace=True)
+  return data
+
 # Riferimento: https://www.kaggle.com/davidcairuz/feature-engineering-lightgbm
 def feature_engineering(data):
   '''
@@ -987,12 +1004,14 @@ def device(data):
 
 def os_(data):
   data['os_name'] = data['id_30'].str.split(' ', expand=True)[0]
-  data['os_version'] = data['id_30'].str.split(' ', expand=True)[1]
+  data['os_version'] = data['id_30'].str.split(' ').str[-1]
+  data['os_version'] = data['os_version'].str.split('_').str[0]  
+  data['os_version'] = data['os_version'].str.split('.').str[0]
   return data
 
 def browser(data):
   data['browser_name'] = data['id_31'].str.split(' ', expand=True)[0]
-  data['browser_version'] = data['id_31'].str.split(' ', expand=True)[1]
+  data['browser_version'] = data['id_31'].str.split(' ').str[-1]
   return data
 
 def screen(data):
