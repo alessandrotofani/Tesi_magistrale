@@ -802,6 +802,44 @@ def plot_ap(name, y_test, y_pred, **kwargs): # plotta la mean average precision
   ax = plt.gca()
   return
 
+def get_numerical_col(data, categorical_col):
+  numerical_col = []
+  for col in data.columns:
+    if col not in categorical_col and col != 'isFraud':
+      numerical_col.append(col)
+  return numerical_col
+
+def mergeResult(X, y, col_name):
+  y_res = y.reshape(np.shape(y)[0],1)
+  data = np.concatenate((X,y_res), axis = 1)
+  col_name.append('isFraud')
+  dataset = pd.DataFrame(data=data, columns=col_name)
+  col_name.remove('isFraud')
+  return dataset
+
+from fastai.tabular.all import *
+def labelEncoding(data, merge = True):
+  categorical_col_toemb = []
+  one_hot_encode = []
+  categorical_col = data.select_dtypes(include=['object']).columns.tolist()
+  numerical_col = get_numerical_col(data, categorical_col)
+  fasted = TabularPandas(data, procs=[Categorify], cat_names = categorical_col, cont_names = numerical_col, y_names='isFraud')
+  X, y = fasted.xs, fasted.ys.values.ravel()
+  for col in categorical_col:
+    if X[col].max() > 7:
+      categorical_col_toemb.append(col)
+    else:
+      one_hot_encode.append(col)
+  X = pd.get_dummies(X, columns=one_hot_encode)
+  cols = get_col(X)
+  numerical_col = get_numerical_col(X, categorical_col_toemb)
+  if merge:
+    return mergeResult(X, y, cols), categorical_col_toemb, numerical_col
+  else:
+    return X, y, categorical_col_toemb, numerical_col
+
+
+
 
 #####################################################################################################
 ## Catboost ##
