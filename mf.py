@@ -275,7 +275,7 @@ def corr_matrix_plot(dataset, corr_matrix): # plotta la matrice di correlazione
     plt.title('Correlation Matrix', fontsize=16)
     return 
     
-def highest_correlations(corr_matrix, tresh = 0.8): # restituisce le feature con correlazione sopra soglia
+def highest_correlations(correlation_data, corr_matrix, tresh = 0.8): # restituisce le feature con correlazione sopra soglia
     '''
     in
     corr_matrix: matrice di correlazione
@@ -286,7 +286,7 @@ def highest_correlations(corr_matrix, tresh = 0.8): # restituisce le feature con
     corr_matrix_abs = corr_matrix.abs()
     corr_matrix_abs = corr_matrix_abs.unstack()
     corr_sorted = corr_matrix_abs.sort_values(kind="quicksort")
-    corr_sorted = corr_sorted[:-len(num_sign_col)] # levo i termini sulla diagonale
+    corr_sorted = corr_sorted[:-len(correlation_data.columns)] # levo i termini sulla diagonale
     corr_sorted = corr_sorted.drop_duplicates() # levo i termini doppi
     corr_sorted = corr_sorted[corr_sorted>tresh]
     return corr_sorted
@@ -947,7 +947,7 @@ def load_list(filename, alg = None): # serve per caricare la lista con gli id de
   list.pop() # levo l'ultimo elemento che è vuoto
   return list
 
-def get_set(filename, data, alg, labels = False): # serve per selezionare il dataset dati gli id; bisogna usare lo stesso set usato nella parte di training del modello
+def get_set(filename, data, alg, labels = False, merged = False): # serve per selezionare il dataset dati gli id; bisogna usare lo stesso set usato nella parte di training del modello
   ''' 
   input
   filename: nome del file che contiene la lista degli id
@@ -960,12 +960,14 @@ def get_set(filename, data, alg, labels = False): # serve per selezionare il dat
   list = load_list(filename, alg)
   list = [int(i) for i in list] 
   X = data.iloc[list, :]
-  if labels:
+  if labels and not merged:
     y = X['isFraud']
     X.drop(columns=['isFraud'], axis = 1, inplace = True)
     return X, y
-  else:
+  if not labels and not merged:
     X.drop(columns=['isFraud'], axis = 1, inplace = True)
+    return X
+  if merged:
     return X
 
 
